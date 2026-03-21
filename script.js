@@ -3,8 +3,9 @@
    Handles API requests, map rendering, and admin authentication/actions
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const API_BASE = 'http://127.0.0.1:8000';
-const WS_URL = 'ws://127.0.0.1:8000/ws';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = isLocalhost ? 'http://127.0.0.1:8000' : 'https://YOUR_RAILWAY_APP.up.railway.app';
+const WS_URL = isLocalhost ? 'ws://127.0.0.1:8000/ws' : 'wss://YOUR_RAILWAY_APP.up.railway.app/ws';
 
 // Register Service Worker for Offline PWA Capabilities
 if ('serviceWorker' in navigator) {
