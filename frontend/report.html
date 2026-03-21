@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Emergency — DisasterLink</title>
+  <meta name="description" content="Submit a real-time emergency incident report to authorities." />
+  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+</head>
+<body>
+
+  <!-- Command Bar -->
+  <nav class="cmdbar">
+    <div class="cmdbar-brand" style="color:var(--danger);">
+      <span class="brand-dot" style="background:var(--danger);box-shadow:0 0 12px var(--danger-glow);"></span>
+      EMERGENCY REPORT
+    </div>
+    <div class="cmdbar-nav">
+      <a href="index.html" style="color:var(--text-secondary);font-weight:600;"><span class="nav-icon">⬅️</span> Back</a>
+    </div>
+  </nav>
+
+  <div class="page-container" style="max-width:800px;margin-top:2rem;">
+    
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <h1 style="font-size:2.5rem;font-weight:800;color:var(--danger);margin-bottom:0.5rem;letter-spacing:0.02em;">🚨 Submit Incident Report</h1>
+      <p style="color:var(--text-secondary);font-size:0.95rem;">This information will be dispatched directly to the active command center.</p>
+    </div>
+
+    <div class="card glass-panel" style="padding:2.5rem;">
+      <form id="reportForm" novalidate style="display:flex;flex-direction:column;gap:1.5rem;">
+        
+        <!-- Type & Severity -->
+        <div class="form-grid">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Type of Disaster <span class="req" style="color:var(--danger);">*</span></label>
+            <select id="repType" class="form-control" required>
+              <option value="" disabled selected>Select Incident Type…</option>
+              <option value="Flood">🌊 Flood / Water Rescue</option>
+              <option value="Earthquake">🏚️ Structure Collapse / Earthquake</option>
+              <option value="Fire">🔥 Major Fire</option>
+              <option value="Cyclone">🌀 Cyclone / Hurricane</option>
+              <option value="Landslide">⛰️ Landslide</option>
+              <option value="Other">⚠️ Other Emergency</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Estimated Severity <span class="req" style="color:var(--danger);">*</span></label>
+            <select id="repSeverity" class="form-control" required>
+              <option value="" disabled selected>Assess situation…</option>
+              <option value="Critical">🔴 Critical (Life Threatening)</option>
+              <option value="High">🟠 High (Severe Property/Risk)</option>
+              <option value="Medium">🟡 Medium (Assistance Needed)</option>
+              <option value="Low">🟢 Low (Monitoring)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Disaster Situation <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">(Optional)</span></label>
+          <select id="repPredefDesc" class="form-control" style="margin-bottom:0.75rem;">
+            <option value="" selected>Custom / I will type down below</option>
+            <option value="Road completely washed away, access blocked.">Road completely washed away, access blocked.</option>
+            <option value="Building collapsed, unknown casualties.">Building collapsed, unknown casualties.</option>
+            <option value="Rapidly spreading fire, immediate evacuation needed.">Rapidly spreading fire, immediate evacuation needed.</option>
+            <option value="Severe flooding, people trapped on roofs.">Severe flooding, people trapped on roofs.</option>
+            <option value="Need urgent medical assistance and supplies.">Need urgent medical assistance and supplies.</option>
+            <option value="Power lines down, significant hazard.">Power lines down, significant hazard.</option>
+          </select>
+          <textarea id="repDesc" class="form-control" rows="2" placeholder="Additional details, casualties, or trapped individuals…"></textarea>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
+
+        <!-- Location Entry -->
+        <div>
+          <h3 style="font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.4rem;">📍 Precise Location <span class="req" style="color:var(--danger);">*</span></h3>
+          <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;">Click on the map or allow location access to pinpoint the coordinates.</p>
+          
+          <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnLocateMe" style="color:var(--info);">
+              <span style="font-size:1.1em;">🎯</span> Use My Location
+            </button>
+            <span id="locStatus" style="font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;">Waiting for input…</span>
+          </div>
+
+          <div id="map" style="height:350px;border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:inset 0 2px 10px rgba(0,0,0,0.5);"></div>
+
+          <div style="display:flex;gap:1rem;margin-top:1rem;">
+            <div class="form-group" style="flex:1;margin:0;">
+              <label class="form-label">Latitude</label>
+              <input type="text" id="repLat" class="form-control" readonly style="background:rgba(255,255,255,0.02);color:var(--text-muted);" />
+            </div>
+            <div class="form-group" style="flex:1;margin:0;">
+              <label class="form-label">Longitude</label>
+              <input type="text" id="repLng" class="form-control" readonly style="background:rgba(255,255,255,0.02);color:var(--text-muted);" />
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-danger btn-full btn-lg" id="submitReportBtn" style="margin-top:1.5rem;font-size:1.1rem;padding:1rem;">
+          🚨 DISPATCH EMERGENCY REPORT
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastContainer"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="script.js?v=2"></script>
+</body>
+</html>

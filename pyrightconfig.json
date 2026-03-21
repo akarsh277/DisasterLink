@@ -1,0 +1,6 @@
+{
+  "include": ["backend"],
+  "venvPath": ".",
+  "pythonVersion": "3.11",
+  "extraPaths": ["backend"]
+}

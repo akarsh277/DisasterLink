@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volunteer — DisasterLink</title>
+  <meta name="description" content="Volunteer portal – view assigned tasks and update your status in real time." />
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+<body>
+
+  <!-- Command Bar -->
+  <nav class="cmdbar">
+    <div class="cmdbar-brand">
+      <span class="brand-dot"></span>
+      DISASTERLINK
+    </div>
+    <div class="cmdbar-nav">
+    </div>
+    <div class="cmdbar-actions" id="volCmdActions" style="display:none;">
+      <span id="volNameDisplay" style="font-size:0.85rem;color:var(--text-secondary);font-weight:600;"></span>
+      <button class="btn btn-ghost btn-sm" id="volLogoutBtn" style="color:var(--danger);">Logout</button>
+    </div>
+  </nav>
+
+  <!-- ── LOGIN GATE ─────────────────────────────────────────────────────── -->
+  <div id="volLoginGate" style="min-height:calc(100vh - 61px);display:flex;align-items:center;justify-content:center;padding:2rem 1rem;">
+    <div class="glass-panel auth-wrap" style="padding:2.5rem;max-width:440px;width:100%;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:1rem;filter:drop-shadow(0 0 10px rgba(16,185,129,0.3));">🤝</div>
+      <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:0.5rem;">Volunteer Portal</h1>
+      <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:2rem;">Login to view your assignments and update your status.</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <a href="login.html" class="btn btn-primary btn-full btn-lg">🔐 Login as Volunteer</a>
+        <a href="volunteer_register.html" class="btn btn-ghost btn-full">✅ Register as New Volunteer</a>
+      </div>
+      <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+        <p style="font-size:0.82rem;color:var(--text-muted);">Already have an account? Use the login button above to access your task dashboard.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VOLUNTEER DASHBOARD (shown after login) ────────────────────────── -->
+  <div id="volDashboard" style="display:none;">
+    <div class="page-container" style="max-width:1200px;">
+
+      <div style="text-align:center;margin-bottom:2.5rem;">
+        <h1 style="font-size:2rem;font-weight:800;letter-spacing:0.02em;margin-bottom:0.5rem;">🤝 Volunteer Command Center</h1>
+        <p style="color:var(--text-secondary);font-size:1rem;" id="volWelcomeMsg">Welcome back, volunteer.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:2rem;align-items:center;max-width:600px;margin:0 auto;">
+
+        <!-- ── Assigned Task Card ────────────────────────────────────────── -->
+        <div class="card glass-panel" style="padding:2rem;width:100%;" id="taskCard">
+          <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem;">
+            <span style="color:var(--warning);">📋</span> My Current Assignment
+          </h2>
+          <div id="taskDetails">
+            <div class="spinner-wrap"><div class="spinner"></div>Loading assignment…</div>
+          </div>
+        </div>
+
+        <!-- ── Status Update Card ────────────────────────────────────────── -->
+        <div class="card glass-panel" style="padding:2rem;width:100%;" id="statusCard">
+          <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem;">
+            <span style="color:var(--info);">📡</span> Update My Status
+          </h2>
+          <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:1.25rem;line-height:1.5;">Tap to advance your status. Admin sees updates in real-time.</p>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <button class="status-btn btn-enroute" id="btnEnRoute" onclick="setVolStatus('EN_ROUTE')">
+              🚗 EN_ROUTE — I am heading there
+            </button>
+            <button class="status-btn btn-reached" id="btnReached" onclick="setVolStatus('REACHED')">
+              📍 REACHED — I have arrived on scene
+            </button>
+            <button class="status-btn btn-completed" id="btnCompleted" onclick="setVolStatus('COMPLETED')">
+              ✅ COMPLETED — Task finished
+            </button>
+          </div>
+          <div id="statusMsg" style="margin-top:1rem;font-size:0.85rem;color:var(--text-muted);"></div>
+        </div>
+
+        <!-- ── Live Field Chat ───────────────────────────────────────────── -->
+        <div class="card glass-panel" style="padding:1.5rem;width:100%;height:400px;display:flex;flex-direction:column;" id="chatCard">
+          <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">
+            <span style="display:flex;align-items:center;gap:0.5rem;"><span style="color:var(--primary);">💬</span> Live Field Chat</span>
+            <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted);display:flex;align-items:center;gap:0.25rem;">
+              <span id="chatGpsStatus" style="color:var(--danger)">GPS Insync</span> 
+              <button class="btn btn-ghost" style="padding:0.1rem 0.4rem;font-size:0.7rem;" onclick="refreshVolGps()">🔄</button>
+            </span>
+          </h2>
+          
+          <div id="chatMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:0.75rem;padding-right:0.5rem;margin-bottom:1rem;font-size:0.85rem;">
+            <!-- Messages load here -->
+          </div>
+          
+          <form id="chatForm" style="display:flex;gap:0.5rem;margin-top:auto;">
+            <input type="text" id="chatInput" class="form-control" autocomplete="off" placeholder="Type a message to Command Center..." style="flex:1;font-size:0.9rem;padding:0.6rem 0.8rem;" required />
+            <button type="submit" class="btn btn-primary" style="padding:0 1rem;">Send</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer"></div>
+  <script src="script.js?v=2"></script>
+  <script>
+    // Volunteer auth
+    const volToken = localStorage.getItem('dl_vol_token');
+    const volId    = parseInt(localStorage.getItem('dl_vol_id') || '0');
+    const volName  = localStorage.getItem('dl_vol_name') || 'Volunteer';
+
+    if (volToken && volId) {
+      // Show dashboard
+      document.getElementById('volLoginGate').style.display  = 'none';
+      document.getElementById('volDashboard').style.display  = 'block';
+      document.getElementById('volCmdActions').style.display = 'flex';
+      document.getElementById('volNameDisplay').textContent  = volName;
+      document.getElementById('volWelcomeMsg').textContent   = `Welcome back, ${volName}!`;
+
+      // Load data
+      loadVolunteerPage();
+      loadMyAssignment();
+    }
+
+    // Logout
+    document.getElementById('volLogoutBtn').addEventListener('click', () => {
+      ['dl_vol_token','dl_vol_id','dl_vol_name','dl_vol_username'].forEach(k => localStorage.removeItem(k));
+      window.location.reload();
+    });
+
+    async function loadMyAssignment() {
+      const detailEl = document.getElementById('taskDetails');
+      try {
+        const res = await fetch(`${API_BASE}/volunteers/`);
+        if (!res.ok) throw new Error();
+        const vols = await res.json();
+        const me = vols.find(v => v.id === volId);
+        if (!me) {
+          detailEl.innerHTML = '<p style="color:var(--text-secondary);">Volunteer record not found. Contact admin.</p>';
+          return;
+        }
+        if (!me.assigned_report_id) {
+          detailEl.innerHTML = `
+            <div style="color:var(--success);font-size:2rem;margin-bottom:0.5rem;">✅</div>
+            <div style="font-weight:700;margin-bottom:0.4rem;">No active assignment</div>
+            <div style="color:var(--text-secondary);font-size:0.85rem;">You are available. Await dispatch from command center.</div>`;
+          disableStatusBtns();
+        } else {
+          // Load that report
+          const repRes = await fetch(`${API_BASE}/reports/`);
+          const reports = repRes.ok ? await repRes.json() : [];
+          const r = reports.find(x => x.id === me.assigned_report_id);
+          const statusCol = {
+            'ASSIGNED': 'var(--warning)',
+            'EN_ROUTE': 'var(--info)',
+            'REACHED': 'var(--primary)',
+            'COMPLETED': 'var(--success)'
+          };
+          const myStatus = me.volunteer_status || 'ASSIGNED';
+          detailEl.innerHTML = r ? `
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.75rem;font-family:var(--font-heading);text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);">Report #${r.id}</span>
+                <span style="color:${statusCol[myStatus]};font-weight:700;font-size:0.85rem;">${myStatus}</span>
+              </div>
+              <div style="font-size:1.2rem;font-weight:800;">${r.disaster_type}</div>
+              <div style="font-size:0.85rem;color:var(--text-secondary);">${r.description || 'No description provided.'}</div>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <span class="badge badge-${(r.severity||'medium').toLowerCase()}">${r.severity}</span>
+                <span class="badge badge-${(r.status||'open').toLowerCase().replace(/\s+/g,'')}">${r.status}</span>
+              </div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">📍 ${r.latitude.toFixed(4)}, ${r.longitude.toFixed(4)}</div>
+            </div>` : `<p style="color:var(--text-secondary);">Assigned to Report #${me.assigned_report_id}</p>`;
+          updateStatusBtns(myStatus);
+        }
+      } catch(e) {
+        detailEl.innerHTML = '<p style="color:var(--danger);">Failed to load assignment.</p>';
+      }
+    }
+
+    function disableStatusBtns() {
+      ['btnEnRoute','btnReached','btnCompleted'].forEach(id => {
+        document.getElementById(id).disabled = true;
+        document.getElementById(id).style.opacity = '0.4';
+      });
+    }
+
+    function updateStatusBtns(currentStatus) {
+      const order = ['ASSIGNED','EN_ROUTE','REACHED','COMPLETED'];
+      const idx = order.indexOf(currentStatus);
+      const btnMap = { 'EN_ROUTE':'btnEnRoute', 'REACHED':'btnReached', 'COMPLETED':'btnCompleted' };
+      Object.entries(btnMap).forEach(([st, btnId]) => {
+        const btn = document.getElementById(btnId);
+        const stIdx = order.indexOf(st);
+        btn.disabled = stIdx <= idx;
+        btn.style.opacity = stIdx <= idx ? '0.4' : '1';
+      });
+    }
+
+    async function setVolStatus(status) {
+      if (!volId) return showToast('Not logged in as volunteer', 'error');
+      
+      const btn = document.querySelector(`.status-btn[onclick*="${status}"]`);
+      if (btn) btn.disabled = true;
+
+      try {
+        // Try to get live GPS first
+        let lat = null, lon = null;
+        try {
+          const pos = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          lat = pos.coords.latitude;
+          lon = pos.coords.longitude;
+        } catch (e) {
+          console.warn("Could not get GPS for status update, sending status only.");
+        }
+
+        const res = await fetch(`${API_BASE}/volunteers/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            volunteer_id: volId, 
+            status,
+            latitude: lat,
+            longitude: lon
+          })
+        });
+        if (!res.ok) throw new Error('Failed to update status');
+        document.getElementById('statusMsg').textContent = `✅ Status updated to ${status}`;
+        showToast(`📡 Status: ${status}`, 'success');
+        updateStatusBtns(status);
+        // Reload assignment info
+        loadMyAssignment();
+      } catch(e) {
+        showToast('❌ ' + e.message, 'error');
+        if (btn) btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
