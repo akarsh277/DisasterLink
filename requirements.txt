@@ -2,7 +2,8 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 passlib
-bcrypt==4.0.1
+bcrypt
 python-multipart
 websockets
 requests
+httpx
