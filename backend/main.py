@@ -5,10 +5,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
 import json
 
-from database import engine, Base, SessionLocal
-import models
-from routers import alerts, camps, disaster, volunteers, resources, stats, admin, auth, weather, chat
-from websocket_manager import manager
+from backend.database import engine, Base, SessionLocal
+from backend import models
+from backend.routers import alerts, camps, disaster, volunteers, resources, stats, admin, auth, weather, chat
+from backend.websocket_manager import manager
 import bcrypt
 import os
 from fastapi.staticfiles import StaticFiles

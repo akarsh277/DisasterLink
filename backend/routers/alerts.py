@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-import models
-import schemas
-from database import get_db
-from websocket_manager import manager
+from backend import models
+from backend import schemas
+from backend.database import get_db
+from backend.websocket_manager import manager
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
 

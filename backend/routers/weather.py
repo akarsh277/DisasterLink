@@ -146,8 +146,8 @@ async def get_weather_for_disasters():
     Queries each report's GPS coordinates against Open-Meteo API.
     Returns a list of weather summaries, one per active disaster.
     """
-    from database import SessionLocal
-    import models as _models
+    from backend.database import SessionLocal
+    from backend import models as _models
 
     db = SessionLocal()
     try:

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
-from database import get_db
-import models
-import schemas
-from websocket_manager import manager
+from backend import models
+from backend import schemas
+from backend.database import get_db
+from backend.websocket_manager import manager
 
 router = APIRouter(prefix="/chat", tags=["Live Chat"])
 
