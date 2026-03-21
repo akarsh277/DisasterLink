@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DisasterLink — Emergency Operations Center</title>
+  <meta name="description" content="Real-time centralized disaster response system for citizens, volunteers, and authorities." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+<body>
+
+  <!-- Command Bar -->
+  <nav class="cmdbar">
+    <div class="cmdbar-brand">
+      <span class="brand-dot"></span>
+      DISASTERLINK
+    </div>
+    <div class="cmdbar-nav">
+    </div>
+    <div class="cmdbar-actions">
+      <a href="login.html" class="btn btn-outline" style="padding: 0.4rem 1rem; border-color: var(--primary); color: var(--primary);"><span class="nav-icon">🔐</span> Login</a>
+    </div>
+
+  </nav>
+
+  <!-- Live Alert Ticker -->
+  <div class="alert-ticker hidden" id="alertTicker">
+    <span class="ticker-label">⚠ LIVE ALERT</span>
+    <span id="tickerText" style="flex:1;">Loading active alerts…</span>
+    <a href="dashboard.html" class="btn btn-sm btn-ghost" style="font-size:0.7rem;">View Details →</a>
+  </div>
+
+  <div class="page-full">
+
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="hero-badge">⚡ Real-time Command Center</div>
+      <h1>Centralized <span class="highlight">Disaster Response</span> & Coordination</h1>
+      <p class="hero-sub">Monitor active incidents, register relief camps, coordinate volunteers, and broadcast live alerts from a single unified platform.</p>
+      <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;">
+        <a href="report.html" class="btn btn-danger btn-lg" style="box-shadow:0 0 20px rgba(239,68,68,0.3);">🚨 Report Emergency</a>
+        <a href="dashboard.html" class="btn btn-primary btn-lg" style="box-shadow:0 0 20px rgba(59,130,246,0.3);">📊 Open Dashboard</a>
+        <a href="volunteer_register.html" class="btn btn-outline btn-lg" style="border-color:var(--border);">🤝 Become a Volunteer</a>
+      </div>
+    </div>
+
+    <!-- KPI Strip -->
+    <div class="stat-grid mb-4" id="homeStatGrid">
+      <div class="stat-box critical glass-panel">
+        <div class="s-value" id="homeStatCritical">—</div>
+        <div class="s-label">Critical Incidents</div>
+      </div>
+      <div class="stat-box warning glass-panel">
+        <div class="s-value" id="homeStatActive">—</div>
+        <div class="s-label">Active Reports</div>
+      </div>
+      <div class="stat-box safe glass-panel">
+        <div class="s-value" id="homeStatCamps">—</div>
+        <div class="s-label">Relief Camps</div>
+      </div>
+      <div class="stat-box info glass-panel">
+        <div class="s-value" id="homeStatVols">—</div>
+        <div class="s-label">Volunteers Ready</div>
+      </div>
+    </div>
+
+
+  </div><!-- /.page-full -->
+
+
+
+  <footer>
+    <div style="margin-bottom:0.5rem;">
+      <span class="brand-dot" style="display:inline-block;width:6px;height:6px;margin-right:0.4rem;"></span>
+      DisasterLink Operations Center
+    </div>
+    <div style="display:flex;gap:0.5rem;justify-content:center;align-items:center;margin-bottom:1rem;">
+       <span id="footerTime" style="font-family:var(--font-heading);font-weight:600;letter-spacing:0.05em;color:var(--text-primary);"></span>
+    </div>
+    Data refreshes in real-time via WebSocket
+  </footer>
+
+  <div id="toastContainer"></div>
+
+  <!-- Fixed Quick SOS Button (Smaller & Inline-Styled for Instant Cache-Bypass) -->
+  <button id="btnQuickSos" title="Emergency SOS — Click to instantly alert Command Center with your GPS" 
+    style="position:fixed;bottom:1.5rem;right:1.5rem;width:3.5rem;height:3.5rem;border-radius:50%;
+           background:var(--danger);border:none;box-shadow:0 0 20px rgba(239,68,68,0.7);
+           z-index:9999;font-size:1.8rem;display:flex;align-items:center;justify-content:center;
+           cursor:pointer;animation:pulse 2s infinite; visibility:visible !important; opacity:1 !important;">🚨</button>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js?v=2"></script>
+  <script>
+    // Footer clock & SOS Animation Fallback
+    function updateClock() {
+      document.getElementById('footerTime').textContent = new Date().toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit'});
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+    
+    // Inject pulse animation in case CSS is cached
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70%  { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

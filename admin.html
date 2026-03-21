@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — DisasterLink Command Center</title>
+  <meta name="description" content="Secured admin panel for disaster response command and control." />
+  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+</head>
+<body>
+
+  <!-- Command Bar -->
+  <nav class="cmdbar">
+    <div class="cmdbar-brand" style="color:var(--danger);">
+      <span class="brand-dot" style="background:var(--danger);box-shadow:0 0 12px var(--danger-glow);"></span>
+      ADMIN CONSOLE
+    </div>
+    <div class="cmdbar-nav" id="adminNavLinks" style="display:none; gap:0.5rem; align-items:center; margin-left:2rem; flex:1;">
+      <button class="btn btn-ghost admin-tab-btn active" data-target="tab-clusters">Clusters</button>
+      <button class="btn btn-ghost admin-tab-btn" data-target="tab-reports">Live Feed</button>
+      <button class="btn btn-ghost admin-tab-btn" data-target="tab-alerts">Alerts</button>
+      <button class="btn btn-ghost admin-tab-btn" data-target="tab-camps">Camps</button>
+      <button class="btn btn-ghost admin-tab-btn" data-target="tab-vols">Volunteers</button>
+      <button class="btn btn-ghost admin-tab-btn" data-target="tab-weather">Weather Intel</button>
+    </div>
+    <div class="cmdbar-actions" id="adminCmdActions" style="display:none;">
+      <button class="btn btn-ghost btn-sm" id="logoutBtn" style="color:var(--danger);">Logout</button>
+    </div>
+  </nav>
+
+  <!-- DASHBOARD VIEW -->
+    <div style="padding:1.5rem 2rem 0;">
+
+      <!-- Main Content -->
+      <div>
+
+        <!-- KPI Row -->
+        <div class="stat-grid" style="margin-bottom:2rem;" id="kpiGrid">
+          <div class="stat-box critical glass-panel" style="padding:1.25rem;">
+            <div class="s-value" id="kpiCritical" style="font-size:2rem;">—</div>
+            <div class="s-label">Critical Alerts</div>
+          </div>
+          <div class="stat-box warning glass-panel" style="padding:1.25rem;">
+            <div class="s-value" id="kpiReports" style="font-size:2rem;">—</div>
+            <div class="s-label">Total Reports</div>
+          </div>
+          <div class="stat-box safe glass-panel" style="padding:1.25rem;">
+            <div class="s-value" id="kpiCamps" style="font-size:2rem;">—</div>
+            <div class="s-label">Active Camps</div>
+          </div>
+          <div class="stat-box info glass-panel" style="padding:1.25rem;">
+            <div class="s-value" id="kpiVols" style="font-size:2rem;">—</div>
+            <div class="s-label">Volunteers</div>
+          </div>
+        </div>
+
+
+        <!-- === CLUSTERS TAB === -->
+        <div id="tab-clusters" class="admin-section" style="scroll-margin-top: 90px; margin-bottom: 3rem;">
+          <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+            <!-- Map -->
+            <div class="card glass-panel" style="padding:0;overflow:hidden;">
+              <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+                <span class="card-title">🗺️ Command Map</span>
+                <button class="btn btn-ghost btn-sm" onclick="loadAdminDash()">↻ Refresh Data</button>
+              </div>
+              <div id="incidentMap" style="height:350px;border-radius:0;border:none;"></div>
+            </div>
+
+            <!-- Clusters Table -->
+            <div class="card glass-panel" style="padding:0;overflow:hidden;">
+              <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+                <span class="card-title">Disaster Clusters</span>
+                <div style="font-size:0.8rem;color:var(--text-muted);">Grouped incidents (~500m radius)</div>
+              </div>
+              <div id="adminClustersTableWrapper" class="table-wrap" style="max-height:400px;overflow-y:auto;">
+                <div class="spinner-wrap"><div class="spinner"></div>Loading tactical clusters…</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- === ALL REPORTS TAB === -->
+        <div id="tab-reports" class="admin-section" style="scroll-margin-top: 90px; margin-bottom: 3rem;">
+          <div class="card glass-panel" style="padding:0;overflow:hidden;">
+            <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+              <span class="card-title">Live Incident Feed (Raw)</span>
+              <div style="display:flex;align-items:center;gap:1.5rem;">
+                <span id="reportCount" style="font-size:0.8rem;color:var(--text-muted);font-weight:600;"></span>
+                <input type="search" class="search-box" id="adminSearchInput" placeholder="🔍 Find report…" style="max-width:240px;" />
+              </div>
+            </div>
+            <div id="adminReportsTableWrapper" class="table-wrap">
+              <div class="spinner-wrap"><div class="spinner"></div>Loading tactical feed…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === ALERTS TAB === -->
+        <div id="tab-alerts" class="admin-section" style="scroll-margin-top: 90px; margin-bottom: 3rem;">
+          <div style="display:grid;grid-template-columns:350px 1fr;gap:1.25rem;align-items:start;">
+
+            <!-- Broadcast Form -->
+            <div class="card glass-panel">
+              <div style="margin-bottom:1.5rem;">
+                <h3 style="font-size:1.1rem;font-weight:700;letter-spacing:0.02em;color:var(--danger);display:flex;align-items:center;gap:0.5rem;"><span style="animation:pulse 2s infinite;">📢</span> Broadcast Alert</h3>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.4rem;line-height:1.5;">Pushes an emergency notification to all users instantly via WebSockets.</p>
+              </div>
+              <form id="alertForm" style="display:flex;flex-direction:column;gap:1rem;">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Message <span class="req" style="color:var(--danger);">*</span></label>
+                  <textarea id="alertMsg" class="form-control" rows="4" placeholder="e.g., Mandatory evacuation required in…" required></textarea>
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Affected Area <span class="req" style="color:var(--danger);">*</span></label>
+                  <input type="text" id="alertLoc" class="form-control" placeholder="District / Zone" required />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Severity Level</label>
+                  <select id="alertSev" class="form-control">
+                    <option value="Critical">🔴 Critical (Immediate Action)</option>
+                    <option value="Warning">🟠 Warning (Prepare)</option>
+                    <option value="Info" selected>🔵 Info (Awareness)</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-danger btn-full btn-lg" style="margin-top:0.5rem;">📢 Broadcast Now</button>
+              </form>
+            </div>
+
+            <!-- Active Alerts Table -->
+            <div class="card glass-panel" style="padding:0;overflow:hidden;">
+              <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);"><span class="card-title">Active Alert Log</span></div>
+              <div id="adminAlertsTableWrapper" class="table-wrap">
+                <div class="spinner-wrap"><div class="spinner"></div></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- === CAMPS TAB === -->
+        <div id="tab-camps" class="admin-section" style="scroll-margin-top: 90px; margin-bottom: 3rem;">
+          <div style="display:grid;grid-template-columns:350px 1fr;gap:1.25rem;align-items:start;">
+
+            <!-- Add Camp Form -->
+            <div class="card glass-panel">
+              <div style="margin-bottom:1.5rem;">
+                <h3 style="font-size:1.1rem;font-weight:700;letter-spacing:0.02em;display:flex;align-items:center;gap:0.5rem;">⛺ Register Camp</h3>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.4rem;line-height:1.5;">Add a new relief shelter to the official disaster network.</p>
+              </div>
+              <form id="campForm" style="display:flex;flex-direction:column;gap:1rem;">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Camp Name <span class="req" style="color:var(--danger);">*</span></label>
+                  <input type="text" id="campName" class="form-control" placeholder="Relief Camp Alpha" required />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Disaster Zone <span class="req" style="color:var(--danger);">*</span></label>
+                  <select id="campLoc" class="form-control" required>
+                    <option value="">Loading active disasters…</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Max Capacity <span class="req" style="color:var(--danger);">*</span></label>
+                  <input type="number" id="campCap" class="form-control" min="1" placeholder="e.g., 500" required />
+                </div>
+                <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:0.5rem;">Register Camp</button>
+              </form>
+            </div>
+
+            <!-- Camps Table -->
+            <div class="card glass-panel" style="padding:0;overflow:hidden;">
+              <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);"><span class="card-title">Camp Directory</span></div>
+              <div id="adminCampsTableWrapper" class="table-wrap">
+                <div class="spinner-wrap"><div class="spinner"></div></div>
+              </div>
+            </div>
+
+          </div>
+
+            <!-- Supply Inventory Section -->
+            <div class="card glass-panel" style="padding:0;overflow:hidden;">
+              <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+                <span class="card-title">📦 Supply Inventory</span>
+              </div>
+              <div style="padding:1.25rem;">
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:end;margin-bottom:1.25rem;">
+                  <div class="form-group" style="margin:0;min-width:140px;">
+                    <label class="form-label" style="font-size:0.8rem;">Camp</label>
+                    <select id="resCampId" class="form-control" style="padding:0.4rem 0.5rem;font-size:0.85rem;">
+                      <option value="">Select Camp…</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin:0;min-width:120px;">
+                    <label class="form-label" style="font-size:0.8rem;">Type</label>
+                    <select id="resType" class="form-control" style="padding:0.4rem 0.5rem;font-size:0.85rem;">
+                      <option value="Food">🍚 Food</option>
+                      <option value="Water">💧 Water</option>
+                      <option value="Medicine">💊 Medicine</option>
+                      <option value="Blankets">🛏️ Blankets</option>
+                      <option value="Blood Units">🩸 Blood Units</option>
+                      <option value="Equipment">⚙️ Equipment</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin:0;width:90px;">
+                    <label class="form-label" style="font-size:0.8rem;">Qty</label>
+                    <input type="number" id="resQty" class="form-control" min="1" placeholder="0" style="padding:0.4rem 0.5rem;font-size:0.85rem;"/>
+                  </div>
+                  <button class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="addResource()">Add Supply</button>
+                </div>
+                <div id="adminResourcesTableWrapper">
+                  <p style="color:var(--text-secondary);font-size:0.85rem;">Loading supplies…</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- === VOLUNTEERS TAB === -->
+        <div id="tab-vols" class="admin-section" style="scroll-margin-top: 90px; margin-bottom: 4rem;">
+          <div class="card glass-panel" style="padding:0;overflow:hidden;">
+            <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+              <span class="card-title">Volunteer Roster</span>
+              <span style="font-size:0.8rem;color:var(--text-secondary);">Dispatched volunteers are auto-assigned by vicinity & skills.</span>
+            </div>
+            <div id="adminVolsTableWrapper" class="table-wrap">
+              <div class="spinner-wrap"><div class="spinner"></div></div>
+            </div>
+          </div>
+          
+          <!-- ── Administrator Live Chat ───────────────────────────────────── -->
+          <div class="card glass-panel" style="padding:1.5rem;width:100%;height:450px;display:flex;flex-direction:column;margin-top:1.25rem;" id="chatCard">
+            <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">
+              <span style="display:flex;align-items:center;gap:0.5rem;"><span style="color:var(--primary);">💬</span> Live Field Chat</span>
+              <span style="font-size:0.75rem;color:var(--text-muted);">Command Center</span>
+            </h2>
+            
+            <div id="chatMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:0.75rem;padding-right:0.5rem;margin-bottom:1rem;font-size:0.85rem;">
+              <!-- Messages load here -->
+            </div>
+            
+            <form id="chatForm" style="display:flex;gap:0.5rem;margin-top:auto;">
+              <input type="text" id="chatInput" class="form-control" autocomplete="off" placeholder="Type a message to volunteers in the field..." style="flex:1;font-size:0.9rem;padding:0.6rem 0.8rem;" required />
+              <button type="submit" class="btn btn-primary" style="padding:0 1.25rem;">Broadcast</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- === WEATHER INTEL TAB === -->
+        <div id="tab-weather" class="admin-section" style="scroll-margin-top: 90px; margin-bottom: 3rem;">
+          <div class="card glass-panel" style="padding:0;overflow:hidden;">
+            <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+              <span class="card-title">🌦️ Weather & Hazard Intelligence</span>
+              <div style="font-size:0.8rem;color:var(--text-muted);">Live data from Open-Meteo API • Auto-refreshes with dashboard</div>
+            </div>
+            <div id="weatherDataPanel" style="padding:1.5rem;">
+              <div class="spinner-wrap"><div class="spinner"></div>Loading weather intelligence…</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /main content -->
+    </div><!-- /padding wrapper -->
+
+  <!-- Edit Report Modal -->
+  <div class="modal-overlay hidden" id="editReportModal">
+    <div class="modal glass-panel">
+      <div class="modal-header">
+        <span class="modal-title">✏️ Update Report Status</span>
+        <button class="modal-close" id="closeEditModal">✕</button>
+      </div>
+      <form id="editReportForm">
+        <input type="hidden" id="editReportId" />
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Status Progression</label>
+            <select id="editStatus" class="form-control">
+              <option value="Open">🔴 Open (Requires Attention)</option>
+              <option value="Resolving">🟠 Resolving (Help Dispatched)</option>
+              <option value="Resolved">🟢 Resolved (Cleared)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Re-evaluate Severity</label>
+            <select id="editSeverity" class="form-control">
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="cancelEditBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveEditBtn">Commit Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastContainer"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="script.js?v=2"></script>
+</body>
+</html>

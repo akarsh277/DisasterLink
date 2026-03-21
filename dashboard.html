@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — DisasterLink</title>
+  <meta name="description" content="Authority monitoring dashboard with real-time incident map, alerts, and relief camp status." />
+  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+</head>
+<body>
+
+  <!-- Command Bar -->
+  <nav class="cmdbar">
+    <div class="cmdbar-brand">
+      <span class="brand-dot"></span>
+      DISASTERLINK
+    </div>
+    <div class="cmdbar-nav">
+      <a href="index.html" style="color:var(--text-secondary);font-weight:600;"><span class="nav-icon">⬅️</span> Back</a>
+    </div>
+
+  </nav>
+
+  <!-- Active Alert Banners -->
+  <div id="publicAlertBanners" style="padding:1rem 2rem 0;display:flex;flex-direction:column;gap:0.75rem;max-width:1400px;margin:0 auto;"></div>
+
+  <div class="page-full">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <div>
+        <h1 style="font-size:1.75rem;margin-bottom:0.25rem;">Command Center Overview</h1>
+        <p style="color:var(--text-secondary);font-size:0.9rem;">Real-time public incident data and resource allocation.</p>
+      </div>
+    </div>
+
+    <!-- KPI Strip -->
+    <div class="stat-grid" id="publicKpiGrid">
+      <div class="stat-box critical glass-panel">
+        <div class="s-value" id="pubCritical">—</div>
+        <div class="s-label">Critical</div>
+      </div>
+      <div class="stat-box warning glass-panel">
+        <div class="s-value" id="pubTotalReports">—</div>
+        <div class="s-label">Total Incidents</div>
+      </div>
+      <div class="stat-box safe glass-panel">
+        <div class="s-value" id="pubActiveCamps">—</div>
+        <div class="s-label">Active Camps</div>
+      </div>
+      <div class="stat-box info glass-panel">
+        <div class="s-value" id="pubAlerts">—</div>
+        <div class="s-label">Alerts Issued</div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs" id="publicTabs" style="margin-bottom:1.5rem;margin-top:2rem;">
+      <button class="tab-btn active" data-target="pub-map">🗺️ Incident Map</button>
+      <button class="tab-btn" data-target="pub-list">📋 Report List</button>
+      <button class="tab-btn" data-target="pub-alerts">📢 Alerts</button>
+      <button class="tab-btn" data-target="pub-camps">⛺ Camps</button>
+    </div>
+
+    <!-- Map Tab -->
+    <div id="pub-map" class="tab-content active">
+      <div class="card glass-panel" style="padding:0;overflow:hidden;">
+        <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+          <span class="card-title">Live Incident Map</span>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button class="map-filter-btn active" data-filter="all">All</button>
+            <button class="map-filter-btn" data-filter="Critical" style="color:#fca5a5;">● Critical</button>
+            <button class="map-filter-btn" data-filter="High" style="color:#fcd34d;">● High</button>
+            <button class="map-filter-btn" data-filter="Medium" style="color:#93c5fd;">● Medium</button>
+          </div>
+        </div>
+        <div class="map-container" style="position:relative;">
+          <div id="publicIncidentMap" style="height:550px;border-radius:0;border:none;"></div>
+          <div class="map-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--danger);box-shadow:0 0 8px var(--danger);"></span>Critical</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--warning);box-shadow:0 0 8px var(--warning);"></span>High</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--info);box-shadow:0 0 8px var(--info);"></span>Medium</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--success);box-shadow:0 0 8px var(--success);"></span>Low / Safe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report List Tab -->
+    <div id="pub-list" class="tab-content">
+      <div class="card glass-panel" style="padding:0;overflow:hidden;">
+        <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+          <span class="card-title">Incident Reports</span>
+          <div style="display:flex;align-items:center;gap:1rem;">
+            <span id="reportCount" style="font-size:0.8rem;color:var(--text-muted);font-weight:500;"></span>
+            <input type="search" id="searchInput" class="search-box" placeholder="🔍 Filter reports…" style="max-width:260px;" />
+          </div>
+        </div>
+        <div id="tableWrapper" class="table-wrap">
+          <div class="spinner-wrap"><div class="spinner"></div>Loading reports…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts Tab -->
+    <div id="pub-alerts" class="tab-content">
+      <div class="card glass-panel" style="padding:0;overflow:hidden;">
+        <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+          <span class="card-title" style="display:flex;align-items:center;gap:0.5rem;"><span style="color:var(--danger);animation:pulse 2s infinite;">📢</span> Authority Alerts</span>
+        </div>
+        <div id="publicAlertsWrapper" style="padding:1.5rem;">
+          <div class="spinner-wrap"><div class="spinner"></div>Loading alerts…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Camps Tab -->
+    <div id="pub-camps" class="tab-content">
+      <div class="card glass-panel" style="padding:0;overflow:hidden;">
+        <div class="card-header" style="margin:0;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+          <span class="card-title">Relief Camps</span>
+        </div>
+        <div id="publicCampsWrapper" style="padding:1.5rem;">
+          <div class="spinner-wrap"><div class="spinner"></div>Loading camps…</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+
+  <div id="toastContainer"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="script.js?v=2"></script>
+</body>
+</html>
