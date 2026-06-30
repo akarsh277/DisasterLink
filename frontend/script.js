@@ -3,8 +3,14 @@
    Handles API requests, map rendering, and admin authentication/actions
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const API_BASE = 'http://127.0.0.1:8000';
-const WS_URL = 'ws://127.0.0.1:8000/ws';
+// Determine if we are running locally or in production
+const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+
+// CHANGE THIS: Replace with your actual Render backend URL once deployed
+const RENDER_BACKEND_URL = 'YOUR_RENDER_URL.onrender.com';
+
+const API_BASE = isLocalhost ? 'http://127.0.0.1:8000' : `https://${RENDER_BACKEND_URL}`;
+const WS_URL = isLocalhost ? 'ws://127.0.0.1:8000/ws' : `wss://${RENDER_BACKEND_URL}/ws`;
 
 // Register Service Worker for Offline PWA Capabilities
 if ('serviceWorker' in navigator) {
