@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DisasterLink — Emergency Operations Center</title>
+  <meta name="description"
+    content="Real-time centralized disaster response system for citizens, volunteers, and authorities." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+
+<body>
+
+  <!-- Command Bar -->
+  <nav class="cmdbar">
+    <div class="cmdbar-brand">
+      <span class="brand-dot"></span>
+      DISASTERLINK
+    </div>
+    <div class="cmdbar-nav">
+    </div>
+    <div class="cmdbar-actions">
+      <a href="login.html" class="btn btn-outline"
+        style="padding: 0.4rem 1rem; border-color: var(--primary); color: var(--primary);">Login</a>
+    </div>
+
+  </nav>
+
+  <!-- Live Alert Ticker -->
+  <div class="alert-ticker hidden" id="alertTicker">
+    <span class="ticker-label">⚠ LIVE ALERT</span>
+    <span id="tickerText" style="flex:1;">Loading active alerts…</span>
+    <a href="dashboard.html" class="btn btn-sm btn-ghost" style="font-size:0.7rem;">View Details →</a>
+  </div>
+
+  <div class="page-full">
+
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="hero-badge">⚡ Real-time Command Center</div>
+      <h1>Centralized <span class="highlight">Disaster Response</span> & Coordination</h1>
+      <p class="hero-sub">Monitor active incidents, register relief camps, coordinate volunteers, and broadcast live
+        alerts from a single unified platform.</p>
+      <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;">
+        <a href="report.html" class="btn btn-danger btn-lg" style="box-shadow:0 0 20px rgba(239,68,68,0.3);">🚨 Report
+          Emergency</a>
+        <a href="dashboard.html" class="btn btn-primary btn-lg" style="box-shadow:0 0 20px rgba(59,130,246,0.3);">📊
+          Open Dashboard</a>
+        <a href="volunteer_register.html" class="btn btn-success btn-lg">🤝 Become a Volunteer</a>
+        <button type="button" id="btnDonate" class="btn btn-warning btn-lg">🪙 Donate</button>
+      </div>
+    </div>
+
+    <!-- KPI Strip -->
+    <div class="stat-grid mb-4" id="homeStatGrid">
+      <div class="stat-box critical glass-panel">
+        <div class="s-value" id="homeStatCritical">—</div>
+        <div class="s-label">Critical Incidents</div>
+      </div>
+      <div class="stat-box warning glass-panel">
+        <div class="s-value" id="homeStatActive">—</div>
+        <div class="s-label">Active Reports</div>
+      </div>
+      <div class="stat-box safe glass-panel">
+        <div class="s-value" id="homeStatCamps">—</div>
+        <div class="s-label">Relief Camps</div>
+      </div>
+      <div class="stat-box info glass-panel">
+        <div class="s-value" id="homeStatVols">—</div>
+        <div class="s-label">Volunteers Ready</div>
+      </div>
+    </div>
+
+
+  </div><!-- /.page-full -->
+
+
+
+  <footer>
+    <div style="margin-bottom:0.5rem;">
+      <span class="brand-dot" style="display:inline-block;width:6px;height:6px;margin-right:0.4rem;"></span>
+      DisasterLink Operations Center
+    </div>
+  </footer>
+
+  <div id="toastContainer"></div>
+
+  <!-- Fixed Quick SOS Button (Smaller & Inline-Styled for Instant Cache-Bypass) -->
+  <button type="button" id="btnQuickSos" title="Emergency SOS — Click to instantly alert Command Center with your GPS"
+    style="position:fixed;bottom:1.5rem;right:1.5rem;width:3.5rem;height:3.5rem;border-radius:50%;
+           background:var(--danger);border:none;box-shadow:0 0 20px rgba(239,68,68,0.7);
+           z-index:9999;font-size:1.8rem;display:flex;align-items:center;justify-content:center;
+           cursor:pointer;animation:pulse 2s infinite; visibility:visible !important; opacity:1 !important;">🚨</button>
+
+  <!-- Donation Modal -->
+  <div id="donationModal"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); z-index:10000; align-items:center; justify-content:center;">
+    <div class="card glass-panel" style="width:450px; max-width:90%; padding:1.5rem;">
+      <h3 style="margin-top:0; color:#fff; font-family:var(--font-heading);">🤝 Send Donation / Relief Supplies</h3>
+      <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.25rem;">Your contributions will be sent
+        to the Command Center to allocate to relief camps in affected areas.</p>
+
+      <form id="donationForm">
+        <div class="form-group">
+          <label class="form-label">Donor Name</label>
+          <input type="text" id="donorName" class="form-control" placeholder="Enter your name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number (Optional)</label>
+          <input type="text" id="donorPhone" class="form-control" placeholder="Enter contact number" />
+        </div>
+        <div class="form-group text-left" style="margin-top:0.75rem;">
+          <label class="form-label">Donation Type</label>
+          <select id="donationType" class="form-control" required
+            style="width:100%; background:var(--bg-input); border:1px solid var(--border); color:#fff; padding:0.4rem 0.75rem; border-radius:var(--radius-sm);">
+            <option value="Money">Money / Funds</option>
+            <option value="Food">Food / Rations</option>
+            <option value="Supplies">Supplies (Blankets, Clothes, etc.)</option>
+            <option value="Medicine">Medical Supplies</option>
+            <option value="Other">Other Requirements</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:0.75rem;">
+          <label class="form-label">Quantity / Amount</label>
+          <input type="number" id="donationQty" class="form-control" placeholder="e.g. 500 (for Money) or 20 (items)"
+            required min="1" />
+        </div>
+        <div class="form-group" style="margin-top:0.75rem;">
+          <label class="form-label">Details / Requirements</label>
+          <textarea id="donationDetails" class="form-control"
+            placeholder="e.g. Rice bags, Blankets, or transaction reference" rows="2"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+          <button type="button" class="btn btn-ghost" id="btnCancelDonation">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitDonation">Submit Donation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js?v=2"></script>
+  <script>
+    // Footer clock & SOS Animation Fallback
+    function updateClock() {
+      document.getElementById('footerTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Inject pulse animation in case CSS is cached
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70%  { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+
+</html>
