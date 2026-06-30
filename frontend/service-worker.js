@@ -38,7 +38,7 @@ self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
   // Always go network-first for API requests
-  if (url.includes('127.0.0.1:8000') || url.includes('/api/')) {
+  if (url.includes('127.0.0.1:8000') || url.includes('disasterlink.onrender.com') || url.includes('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
