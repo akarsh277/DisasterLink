@@ -7,7 +7,7 @@
 const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 
 // CHANGE THIS: Replace with your actual Render backend URL once deployed
-const RENDER_BACKEND_URL = 'YOUR_RENDER_URL.onrender.com';
+const RENDER_BACKEND_URL = 'disasterlink.onrender.com';
 
 const API_BASE = isLocalhost ? 'http://127.0.0.1:8000' : `https://${RENDER_BACKEND_URL}`;
 const WS_URL = isLocalhost ? 'ws://127.0.0.1:8000/ws' : `wss://${RENDER_BACKEND_URL}/ws`;
