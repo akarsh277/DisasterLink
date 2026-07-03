@@ -18,7 +18,7 @@ Base.metadata.create_all(bind=engine)
 
 def create_default_admin():
     db = SessionLocal()
-    admin_user = db.query(models.User).filter(models.User.role == "admin").first()
+    admin_user = db.query(models.User).filter(models.User.username == "admin").first()
     if not admin_user:
         hashed = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         new_admin = models.User(
@@ -28,7 +28,19 @@ def create_default_admin():
             name="Administrator"
         )
         db.add(new_admin)
-        db.commit()
+
+    demo_admin = db.query(models.User).filter(models.User.username == "demo_admin").first()
+    if not demo_admin:
+        hashed_demo = bcrypt.hashpw("demoadmin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        new_demo = models.User(
+            username="demo_admin", 
+            hashed_password=hashed_demo,
+            role="admin", 
+            name="Demo Administrator"
+        )
+        db.add(new_demo)
+
+    db.commit()
     db.close()
 
 create_default_admin()

@@ -365,6 +365,12 @@ async def dispatch_volunteers(report_id: int, db: Session = Depends(get_db)):
             "phone": vol.phone, "distance_km": dist
         })
 
+    if not dispatched:
+        raise HTTPException(
+            status_code=400,
+            detail="No available volunteers in the system. Register or release volunteers first."
+        )
+
     if dispatched and report.status == "Open":
         report.status = "In Progress"
 

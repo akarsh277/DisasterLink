@@ -101,6 +101,11 @@
       border-radius: 8px;
       font-weight: 600;
     }
+    #btnOpenTestCredentials:hover {
+      color: #ffffff !important;
+      border-color: #8b949e !important;
+      background: rgba(255, 255, 255, 0.03) !important;
+    }
   </style>
 </head>
 <body>
@@ -175,6 +180,79 @@
         New volunteer? <a href="volunteer_register.html" style="color:var(--primary);font-weight:600;text-decoration:none;">Register here →</a>
       </div>
 
+      <!-- Test Credentials Trigger -->
+      <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid #30363d; padding-top: 1.5rem;">
+        <button type="button" id="btnOpenTestCredentials" class="btn btn-outline" style="border-color: #30363d; color: #8b949e; font-size: 0.85rem; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.2s ease; border-radius: 8px; background: transparent; width: 100%; font-weight: 600;">
+          🔑 Test Credentials
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Test Credentials Modal -->
+  <div class="modal-overlay hidden" id="testCredentialsModal">
+    <div class="modal glass-panel" style="max-width: 600px; background: #161b22; border: 1px solid #30363d;">
+      <div class="modal-header" style="border-bottom: 1px solid #30363d; padding-bottom: 1rem; margin-bottom: 1rem;">
+        <span class="modal-title" style="font-size:1.35rem;font-weight:800;color:#fff;">Test Credentials</span>
+        <button class="modal-close" id="closeCredentialsModal">✕</button>
+      </div>
+      <p style="font-size:0.85rem;color:#8b949e;margin-bottom:1.5rem;">Select an account below to automatically fill the login form.</p>
+      
+      <div class="table-wrap" style="overflow-x:auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid #30363d; color: #8b949e; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+              <th style="padding: 0.75rem 0.5rem;">Role</th>
+              <th style="padding: 0.75rem 0.5rem;">Username</th>
+              <th style="padding: 0.75rem 0.5rem;">Password</th>
+              <th style="padding: 0.75rem 0.5rem; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #21262d;">
+              <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #10b981;">Admin (Demo)</td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">demo_admin</code></td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">demoadmin123</code></td>
+              <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                <button type="button" class="btn btn-sm" onclick="autofill('admin', 'demo_admin', 'demoadmin123')" style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); cursor: pointer;">Autofill</button>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #21262d;">
+              <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #58a6ff;">Admin (Original)</td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">admin</code></td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">admin123</code></td>
+              <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                <button type="button" class="btn btn-sm" onclick="autofill('admin', 'admin', 'admin123')" style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(88, 166, 255, 0.1); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.2); cursor: pointer;">Autofill</button>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #21262d;">
+              <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #f0883e;">Volunteer (Rescue)</td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">vol1</code></td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">vol123</code></td>
+              <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol1', 'vol123')" style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer;">Autofill</button>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #21262d;">
+              <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #f0883e;">Volunteer (Medical)</td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">vol2</code></td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">vol123</code></td>
+              <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol2', 'vol123')" style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer;">Autofill</button>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #21262d;">
+              <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #f0883e;">Volunteer (Logistics)</td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">vol3</code></td>
+              <td style="padding: 0.75rem 0.5rem;"><code style="background: #0d1117; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9;">vol123</code></td>
+              <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol3', 'vol123')" style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer;">Autofill</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -204,6 +282,44 @@
         open.style.display = 'block';
         closed.style.display = 'none';
       }
+    }
+
+    // Modal listeners
+    const credsModal = document.getElementById('testCredentialsModal');
+    const btnOpenCreds = document.getElementById('btnOpenTestCredentials');
+    const btnCloseCreds = document.getElementById('closeCredentialsModal');
+
+    if (btnOpenCreds && credsModal && btnCloseCreds) {
+      btnOpenCreds.addEventListener('click', () => {
+        credsModal.classList.remove('hidden');
+      });
+      btnCloseCreds.addEventListener('click', () => {
+        credsModal.classList.add('hidden');
+      });
+      credsModal.addEventListener('click', (e) => {
+        if (e.target === credsModal) {
+          credsModal.classList.add('hidden');
+        }
+      });
+    }
+
+    function autofill(role, username, password) {
+      switchRole(role);
+      document.getElementById('loginUsername').value = username;
+      document.getElementById('loginPassword').value = password;
+      credsModal.classList.add('hidden');
+
+      // Flash feedback
+      const inputs = [document.getElementById('loginUsername'), document.getElementById('loginPassword')];
+      inputs.forEach(input => {
+        input.style.transition = 'background-color 0.3s ease';
+        input.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+        setTimeout(() => {
+          input.style.backgroundColor = '#161b22';
+        }, 500);
+      });
+
+      showToast('⚡ Credentials autofilled!', 'info');
     }
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {

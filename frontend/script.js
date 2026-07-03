@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // Determine if we are running locally or in production
-const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.hostname === '' || window.location.protocol === 'file:';
 
 // CHANGE THIS: Replace with your actual Render backend URL once deployed
 const RENDER_BACKEND_URL = 'disasterlink.onrender.com';
