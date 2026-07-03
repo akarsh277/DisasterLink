@@ -681,6 +681,15 @@ function handleLiveEvent(msg) {
     if (document.getElementById('adminDonationsTableWrapper')) {
       loadAdminDonations();
     }
+  } else if (tType === 'NEW_CHAT') {
+    const container = document.getElementById('chatMessages');
+    if (container) {
+      const msgHtml = renderChatMsg(data);
+      if (msgHtml) {
+        container.insertAdjacentHTML('beforeend', msgHtml);
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }
 }
 
@@ -1947,11 +1956,174 @@ function initChat() {
   const form = document.getElementById('chatForm');
   if (!form) return;
 
+  // Make form position relative so mention dropdown aligns perfectly
+  form.style.position = 'relative';
+
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+
   loadChatMessages();
+
+  // Create mention dropdown container dynamically
+  const dropdown = document.createElement('div');
+  dropdown.id = 'mentionDropdown';
+  dropdown.style.position = 'absolute';
+  dropdown.style.bottom = 'calc(100% + 5px)'; // Position 5px above the input form
+  dropdown.style.left = '0';
+  dropdown.style.width = '100%';
+  dropdown.style.maxWidth = '300px';
+  dropdown.style.maxHeight = '200px';
+  dropdown.style.overflowY = 'auto';
+  dropdown.style.background = 'rgba(22, 27, 34, 0.95)';
+  dropdown.style.backdropFilter = 'blur(16px)';
+  dropdown.style.border = '1px solid #30363d';
+  dropdown.style.borderRadius = '6px';
+  dropdown.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)';
+  dropdown.style.zIndex = '1000';
+  dropdown.style.display = 'none';
+  form.appendChild(dropdown);
+
+  // Load volunteers for mentions
+  let volunteersList = [];
+  async function fetchVolunteersForMentions() {
+    try {
+      const res = await fetch(`${API_BASE}/volunteers/`);
+      if (res.ok) volunteersList = await res.json();
+    } catch (e) {
+      console.error('Failed to load volunteers list', e);
+    }
+  }
+  fetchVolunteersForMentions();
+
+  let activeIndex = 0;
+  let currentFiltered = [];
+  let currentAtIdx = -1;
+
+  function renderMentionDropdown(volunteers, atIdx) {
+    currentFiltered = volunteers;
+    currentAtIdx = atIdx;
+    activeIndex = 0;
+
+    dropdown.innerHTML = volunteers.map((v, idx) => {
+      const name = v.name || v.username;
+      const username = v.username || v.name.toLowerCase().replace(/\s+/g, '');
+      const activeStyle = idx === activeIndex 
+        ? 'background:rgba(59,130,246,0.15);border-left:3px solid var(--primary);padding-left:9px;' 
+        : 'padding-left:12px;';
+      return `
+        <div class="mention-item" data-username="${username}" style="padding:0.6rem 0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:#c9d1d9;font-size:0.85rem;border-bottom:1px solid rgba(255,255,255,0.05);transition:background 0.2s;${activeStyle}">
+          <div>
+            <strong style="color:#fff;">${name}</strong>
+            <span style="font-size:0.75rem;color:var(--text-muted);margin-left:0.4rem;">@${username}</span>
+          </div>
+          <span style="font-size:0.7rem;background:rgba(255,255,255,0.08);padding:0.1rem 0.3rem;border-radius:4px;color:var(--text-muted);">${v.skill || 'Volunteer'}</span>
+        </div>
+      `;
+    }).join('');
+
+    dropdown.style.display = 'block';
+
+    const items = dropdown.querySelectorAll('.mention-item');
+    items.forEach((item, idx) => {
+      item.addEventListener('click', () => {
+        selectMention(item.getAttribute('data-username'));
+      });
+      item.addEventListener('mouseenter', () => {
+        activeIndex = idx;
+        updateActiveMentionItem();
+      });
+    });
+  }
+
+  function updateActiveMentionItem() {
+    const items = dropdown.querySelectorAll('.mention-item');
+    items.forEach((item, idx) => {
+      if (idx === activeIndex) {
+        item.style.background = 'rgba(59,130,246,0.15)';
+        item.style.borderLeft = '3px solid var(--primary)';
+        item.style.paddingLeft = '9px';
+      } else {
+        item.style.background = 'transparent';
+        item.style.borderLeft = 'none';
+        item.style.paddingLeft = '12px';
+      }
+    });
+  }
+
+  function selectMention(username) {
+    const text = input.value;
+    const beforeAt = text.slice(0, currentAtIdx);
+    const afterCaret = text.slice(input.selectionStart);
+
+    input.value = beforeAt + '@' + username + ' ' + afterCaret;
+    dropdown.style.display = 'none';
+    input.focus();
+    const newCursorPos = currentAtIdx + username.length + 2; // @ + username + space
+    input.setSelectionRange(newCursorPos, newCursorPos);
+  }
+
+  // Handle keyboard/input updates
+  input.addEventListener('input', () => {
+    const text = input.value;
+    const caretPos = input.selectionStart;
+    const beforeCaret = text.slice(0, caretPos);
+    const lastAtIdx = beforeCaret.lastIndexOf('@');
+
+    if (lastAtIdx !== -1 && (lastAtIdx === 0 || /\s/.test(beforeCaret[lastAtIdx - 1]))) {
+      const query = beforeCaret.slice(lastAtIdx + 1);
+      const filtered = volunteersList.filter(v => {
+        const uName = (v.username || '').toLowerCase();
+        const rName = (v.name || '').toLowerCase();
+        return uName.includes(query.toLowerCase()) || rName.includes(query.toLowerCase());
+      });
+
+      if (filtered.length > 0) {
+        renderMentionDropdown(filtered, lastAtIdx);
+      } else {
+        dropdown.style.display = 'none';
+      }
+    } else {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (dropdown.style.display === 'block') {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % currentFiltered.length;
+        updateActiveMentionItem();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = (activeIndex - 1 + currentFiltered.length) % currentFiltered.length;
+        updateActiveMentionItem();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentFiltered[activeIndex]) {
+          const username = currentFiltered[activeIndex].username || currentFiltered[activeIndex].name.toLowerCase().replace(/\s+/g, '');
+          selectMention(username);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        dropdown.style.display = 'none';
+      }
+    } else {
+      // Fix: Enter key sends message
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target !== input && e.target !== dropdown && !dropdown.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const input = document.getElementById('chatInput');
     const msg = input.value.trim();
     if (!msg) return;
 
