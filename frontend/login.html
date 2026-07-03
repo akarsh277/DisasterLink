@@ -233,7 +233,7 @@
 
   <!-- Test Credentials Modal -->
   <div class="modal-overlay hidden" id="testCredentialsModal">
-    <div class="modal glass-panel" style="max-width: 520px; background: #161b22; border: 1px solid #30363d; padding: 1.5rem 1.25rem;">
+    <div class="modal glass-panel" style="max-width: 560px; background: #161b22; border: 1px solid #30363d; padding: 1.75rem;">
       <div class="modal-header" style="border-bottom: 1px solid #30363d; padding-bottom: 1rem; margin-bottom: 1rem;">
         <span class="modal-title" style="font-size:1.35rem;font-weight:800;color:#fff;">Test Credentials</span>
         <button class="modal-close" id="closeCredentialsModal">✕</button>
@@ -241,68 +241,112 @@
       <p style="font-size:0.85rem;color:#8b949e;margin-bottom:1.5rem;">Select an account below to automatically fill the
         login form.</p>
 
-      <div class="table-wrap" style="overflow-x:auto;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8rem;">
+      <div class="table-wrap" style="overflow-x:hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: auto;">
           <thead>
             <tr
               style="border-bottom: 1px solid #30363d; color: #8b949e; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
-              <th style="padding: 0.5rem 0.25rem;">Role</th>
-              <th style="padding: 0.5rem 0.25rem;">Username</th>
-              <th style="padding: 0.5rem 0.25rem;">Password</th>
-              <th style="padding: 0.5rem 0.25rem; text-align: right;">Action</th>
+              <th style="padding: 0.6rem 0.45rem;">ROLE</th>
+              <th style="padding: 0.6rem 0.45rem;">USERNAME</th>
+              <th style="padding: 0.6rem 0.45rem;">PASSWORD</th>
+              <th style="padding: 0.6rem 0.45rem; text-align: right;">ACTION</th>
             </tr>
           </thead>
           <tbody>
             <tr style="border-bottom: 1px solid #21262d;">
-              <td style="padding: 0.5rem 0.25rem; font-weight: 700; color: #10b981;">Admin (Demo)</td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">demo_admin</code>
+              <td style="padding: 0.6rem 0.45rem; font-weight: 700; color: #10b981; line-height: 1.25;">
+                Admin
+                <span style="font-size: 0.72rem; font-weight: normal; color: #8b949e; display: block;">(Demo)</span>
               </td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">demoadmin123</code>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">demo_admin</code>
               </td>
-              <td style="padding: 0.5rem 0.25rem; text-align: right;">
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">demoadmin123</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem; text-align: right;">
                 <button type="button" class="btn btn-sm" onclick="autofill('admin', 'demo_admin', 'demoadmin123')"
-                  style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); cursor: pointer;">Autofill</button>
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); cursor: pointer; font-weight: 600;">Autofill</button>
               </td>
             </tr>
             <tr style="border-bottom: 1px solid #21262d;">
-              <td style="padding: 0.5rem 0.25rem; font-weight: 700; color: #f0883e;">Volunteer (Rescue)</td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">vol1</code>
+              <td style="padding: 0.6rem 0.45rem; font-weight: 700; color: #f0883e; line-height: 1.25;">
+                Volunteer
+                <span style="font-size: 0.72rem; font-weight: normal; color: #8b949e; display: block;">(Rescue)</span>
               </td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">vol123</code>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol1</code>
               </td>
-              <td style="padding: 0.5rem 0.25rem; text-align: right;">
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol123</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem; text-align: right;">
                 <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol1', 'vol123')"
-                  style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer;">Autofill</button>
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer; font-weight: 600;">Autofill</button>
               </td>
             </tr>
             <tr style="border-bottom: 1px solid #21262d;">
-              <td style="padding: 0.5rem 0.25rem; font-weight: 700; color: #f0883e;">Volunteer (Medical)</td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">vol2</code>
+              <td style="padding: 0.6rem 0.45rem; font-weight: 700; color: #f0883e; line-height: 1.25;">
+                Volunteer
+                <span style="font-size: 0.72rem; font-weight: normal; color: #8b949e; display: block;">(Medical)</span>
               </td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">vol123</code>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol2</code>
               </td>
-              <td style="padding: 0.5rem 0.25rem; text-align: right;">
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol123</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem; text-align: right;">
                 <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol2', 'vol123')"
-                  style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer;">Autofill</button>
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer; font-weight: 600;">Autofill</button>
               </td>
             </tr>
             <tr style="border-bottom: 1px solid #21262d;">
-              <td style="padding: 0.5rem 0.25rem; font-weight: 700; color: #f0883e;">Volunteer (Logistics)</td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">vol3</code>
+              <td style="padding: 0.6rem 0.45rem; font-weight: 700; color: #f0883e; line-height: 1.25;">
+                Volunteer
+                <span style="font-size: 0.72rem; font-weight: normal; color: #8b949e; display: block;">(Logistics)</span>
               </td>
-              <td style="padding: 0.5rem 0.25rem;"><code
-                  style="background: #0d1117; padding: 0.15rem 0.3rem; border-radius: 4px; border: 1px solid #30363d; color: #c9d1d9; font-size: 0.75rem; font-family: monospace;">vol123</code>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol3</code>
               </td>
-              <td style="padding: 0.5rem 0.25rem; text-align: right;">
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol123</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem; text-align: right;">
                 <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol3', 'vol123')"
-                  style="font-size: 0.75rem; padding: 0.25rem 0.60rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer;">Autofill</button>
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer; font-weight: 600;">Autofill</button>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #21262d;">
+              <td style="padding: 0.6rem 0.45rem; font-weight: 700; color: #f0883e; line-height: 1.25;">
+                Volunteer
+                <span style="font-size: 0.72rem; font-weight: normal; color: #8b949e; display: block;">(Shelter)</span>
+              </td>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol4</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol123</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem; text-align: right;">
+                <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol4', 'vol123')"
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer; font-weight: 600;">Autofill</button>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #21262d;">
+              <td style="padding: 0.6rem 0.45rem; font-weight: 700; color: #f0883e; line-height: 1.25;">
+                Volunteer
+                <span style="font-size: 0.72rem; font-weight: normal; color: #8b949e; display: block;">(Rescue)</span>
+              </td>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol5</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem;"><code
+                  style="background: #21262d; padding: 0.2rem 0.4rem; border-radius: 4px; color: #c9d1d9; font-size: 0.8rem; font-family: monospace;">vol123</code>
+              </td>
+              <td style="padding: 0.6rem 0.45rem; text-align: right;">
+                <button type="button" class="btn btn-sm" onclick="autofill('volunteer', 'vol5', 'vol123')"
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 12px; background: rgba(240, 136, 62, 0.1); color: #f0883e; border: 1px solid rgba(240, 136, 62, 0.2); cursor: pointer; font-weight: 600;">Autofill</button>
               </td>
             </tr>
           </tbody>
