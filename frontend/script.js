@@ -671,6 +671,11 @@ function handleLiveEvent(msg) {
     } else {
       injectAlertRow({ severity: 'Info', location: `Report #${data.assigned_report_id || '?'}`, message: `${statusEmoji} ${data.name}: ${data.status}`, timestamp: new Date().toISOString() });
     }
+    
+    // Refresh admin roster in real-time
+    if (document.getElementById('adminVolsTableWrapper')) {
+      loadAdminDash();
+    }
   } else if (tType === 'NEW_DONATION') {
     showToast(`NEW DONATION: ${data.donor_name} sent ${data.donation_type}!`, 'success');
     addLiveActivity('💖', 'New Donation Received', `${data.donor_name} donated ${data.quantity || ''} ${data.donation_type} (${data.item_details || ''})`);
@@ -689,6 +694,11 @@ function handleLiveEvent(msg) {
         container.insertAdjacentHTML('beforeend', msgHtml);
         container.scrollTop = container.scrollHeight;
       }
+    }
+  } else if (tType === 'UPDATE_REPORT') {
+    // Refresh admin dashboard if incident is resolved/updated
+    if (document.getElementById('adminReportsTableWrapper')) {
+      loadAdminDash();
     }
   }
 }
@@ -2329,7 +2339,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Hook up WebSockets for Admin and Volunteer panels
-  if (document.getElementById('kpiGrid') || (document.getElementById('volunteersTableWrapper') && !document.getElementById('publicKpiGrid'))) {
+  if (document.getElementById('kpiGrid') || document.getElementById('volDashboard')) {
     setupWebSocket();
   }
 
