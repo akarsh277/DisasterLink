@@ -989,12 +989,14 @@ tbody td {
   pointer-events: none;
 }
 .toast {
+  position: relative;
+  overflow: hidden;
   background: rgba(18, 18, 18, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   color: var(--text-primary);
-  padding: 1rem 1.25rem;
+  padding: 1.1rem 1.25rem;
   border-radius: var(--radius-sm);
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
   font-size: 0.9rem;
@@ -1007,13 +1009,33 @@ tbody td {
   animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 .toast::before {
-  content: '🔔';
+  content: '';
   font-size: 1.1em;
+  font-weight: 800;
 }
-.toast.success { border-left: 3px solid var(--success); }
-.toast.success::before { content: '✅'; }
-.toast.error { border-left: 3px solid var(--danger); }
-.toast.error::before { content: '🚨'; }
+.toast.success::before {
+  content: '✓';
+  color: var(--success);
+}
+.toast.error::before {
+  content: '✕';
+  color: var(--danger);
+}
+.toast::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(to right, #00adff, rgba(0, 173, 255, 0));
+}
+.toast.success::after {
+  background: linear-gradient(to right, #10b981, rgba(16, 185, 129, 0));
+}
+.toast.error::after {
+  background: linear-gradient(to right, #ef4444, rgba(239, 68, 68, 0));
+}
 
 /* Modal */
 .modal-overlay {

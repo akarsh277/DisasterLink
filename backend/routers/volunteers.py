@@ -6,6 +6,7 @@ import models
 import schemas
 from database import get_db
 from websocket_manager import manager
+from routers.chat import extract_user_from_token
 
 router = APIRouter(prefix="/volunteers", tags=["Volunteers"])
 
@@ -47,8 +48,18 @@ def assign_volunteer(volunteer_id: int, assign: schemas.VolunteerAssign, db: Ses
 
 
 @router.delete("/{volunteer_id}", status_code=204)
-def delete_volunteer(volunteer_id: int, db: Session = Depends(get_db)):
-    """Remove a volunteer record and their linked user account."""
+def delete_volunteer(
+    volunteer_id: int, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(extract_user_from_token)
+):
+    """Remove a volunteer record and their linked user account. Only original admin is allowed."""
+    if current_user.role != "admin" or current_user.username != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: Only the original admin can permanently delete volunteers."
+        )
+
     vol = db.query(models.Volunteer).filter(models.Volunteer.id == volunteer_id).first()
     if not vol:
         raise HTTPException(status_code=404, detail="Volunteer not found")

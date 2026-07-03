@@ -53,10 +53,12 @@ function showToast(message, type = 'info') {
   let removeTimeout;
   const dismiss = () => {
     if (removeTimeout) clearTimeout(removeTimeout);
-    el.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    el.style.animation = 'none';
+    el.offsetHeight; // Trigger reflow
+    el.style.transition = 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
     el.style.opacity = '0';
-    el.style.transform = 'translateY(20px) scale(0.9)';
-    setTimeout(() => el.remove(), 400);
+    el.style.transform = 'translateX(50px) scale(0.95)';
+    setTimeout(() => el.remove(), 250);
   };
   
   closeBtn.addEventListener('click', (e) => {
@@ -190,7 +192,7 @@ function initReportForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!latField.value || !lngField.value) {
-      showToast('❌ Please provide a location first.', 'error');
+      showToast('Please provide a location first.', 'error');
       return;
     }
 
@@ -221,11 +223,11 @@ function initReportForm() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Submission failed');
-      showToast('✅ Report submitted successfully!');
+      showToast('Report submitted successfully!');
       form.reset();
       setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
     } catch (err) {
-      showToast(`❌ ${err.message}`, 'error');
+      showToast(`Delete failed: ${err.message}`, 'error');
       btn.disabled = false; btn.textContent = '🚨 DISPATCH EMERGENCY REPORT';
     }
   });
@@ -290,11 +292,11 @@ function initVolunteerForm() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Registration failed');
-      showToast('✅ Welcome to the DisasterLink Volunteer Network!');
+      showToast('Welcome to the DisasterLink Volunteer Network!');
       form.reset();
       loadPublicVolunteers();
     } catch (err) {
-      showToast(`❌ ${err.message}`, 'error');
+      showToast(err.message, 'error');
     } finally {
       btn.disabled = false; btn.textContent = 'Join Network';
     }
@@ -594,7 +596,7 @@ function handleLiveEvent(msg) {
   }
 
   if (tType === 'NEW_REPORT') {
-    showToast(`🚨 NEW ${data.severity.toUpperCase()} ALERT: ${data.disaster_type} reported!`);
+    showToast(`NEW ${data.severity.toUpperCase()} ALERT: ${data.disaster_type} reported!`);
 
     // Update Map implicitly
     addSingleReportToMap(data);
@@ -644,14 +646,14 @@ function handleLiveEvent(msg) {
     }
 
   } else if (tType === 'NEW_ALERT') {
-    showToast(`📢 AUTHORITY ALERT: ${data.message}`);
+    showToast(`AUTHORITY ALERT: ${data.message}`);
     addLiveActivity('📢', 'Alert Broadcasted', data.message);
     // Inject into dashboard alerts table immediately (no reload)
     injectAlertRow({ severity: data.severity || 'Info', location: data.location || '—', message: data.message, timestamp: new Date().toISOString() });
 
   } else if (tType === 'DISPATCH') {
     const names = (data.dispatched_volunteers || []).map(v => v.name || v).join(', ');
-    showToast(`🏃 ${data.dispatched_volunteers.length} volunteer(s) dispatched to Report #${data.report_id}!`, 'success');
+    showToast(`${data.dispatched_volunteers.length} volunteer(s) dispatched to Report #${data.report_id}!`, 'success');
     addLiveActivity('🏃', `Volunteers Dispatched`, `${names} deployed to Report #${data.report_id}`);
 
     injectAlertRow({ severity: 'Info', location: `Report #${data.report_id}`, message: `🏃 Volunteer(s) dispatched: ${names}`, timestamp: new Date().toISOString() });
@@ -659,7 +661,7 @@ function handleLiveEvent(msg) {
 
   } else if (tType === 'VOLUNTEER_UPDATE') {
     const statusEmoji = data.status === 'COMPLETED' ? '✅' : data.status === 'EN_ROUTE' ? '🚗' : data.status === 'REACHED' ? '📍' : '📡';
-    showToast(`${statusEmoji} ${data.name}: ${data.status}`);
+    showToast(`${data.name}: ${data.status}`);
     addLiveActivity(statusEmoji, `Volunteer Status: ${data.status}`, `${data.name} updated to ${data.status}.`);
 
     if (data.status === 'COMPLETED') {
@@ -670,7 +672,7 @@ function handleLiveEvent(msg) {
       injectAlertRow({ severity: 'Info', location: `Report #${data.assigned_report_id || '?'}`, message: `${statusEmoji} ${data.name}: ${data.status}`, timestamp: new Date().toISOString() });
     }
   } else if (tType === 'NEW_DONATION') {
-    showToast(`💖 NEW DONATION: ${data.donor_name} sent ${data.donation_type}!`, 'success');
+    showToast(`NEW DONATION: ${data.donor_name} sent ${data.donation_type}!`, 'success');
     addLiveActivity('💖', 'New Donation Received', `${data.donor_name} donated ${data.quantity || ''} ${data.donation_type} (${data.item_details || ''})`);
     if (document.getElementById('adminDonationsTableWrapper')) {
       loadAdminDonations();
@@ -1034,8 +1036,8 @@ async function loadAdminDash() {
     vWrap.innerHTML = `
       <div class="table-wrapper">
         <table style="font-size:0.9rem">
-          <thead><tr><th>Name</th><th>Phone</th><th>Skill</th><th>Last Known GPS</th><th>Assignment</th><th>Status</th></tr></thead>
-          <tbody>${vols.length === 0 ? `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">No volunteers registered</td></tr>` : vols.map(v => `<tr>
+          <thead><tr><th>Name</th><th>Phone</th><th>Skill</th><th>Last Known GPS</th><th>Assignment</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>${vols.length === 0 ? `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">No volunteers registered</td></tr>` : vols.map(v => `<tr>
             <td>${v.name}</td><td>${v.phone || '—'}</td><td>${skillBadge(v.skill)}</td>
             <td>
               ${(v.latitude && v.longitude)
@@ -1051,6 +1053,11 @@ async function loadAdminDash() {
         }
         return `<span style="font-size:0.8rem;font-weight:700;color:var(--info)">ASSIGNED</span>`;
       })()}
+            </td>
+            <td>
+              <button class="table-action-btn" onclick="deleteEntity('volunteers', ${v.id}, this)" title="Delete Volunteer" style="color:var(--danger);border-color:rgba(239,68,68,0.2);background:transparent;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
             </td>
           </tr>`).join('')}</tbody>
         </table>
@@ -1115,7 +1122,7 @@ async function dispatchCluster(reportId, btnEl) {
 
     // Build a rich notification showing volunteer names
     const volNames = (data.volunteers || data.dispatched_volunteers || []).map(v => v.name || v).join(', ') || 'a volunteer';
-    showToast(`✅ ${volNames} dispatched to Report #${reportId}!`, 'success');
+    showToast(`${volNames} dispatched to Report #${reportId}!`, 'success');
 
     // Surgically remove the row from the clusters table (no full reload)
     if (row) {
@@ -1129,7 +1136,7 @@ async function dispatchCluster(reportId, btnEl) {
       if (document.getElementById('adminVolsTableWrapper')) loadAdminDash();
     }, 500);
   } catch (e) {
-    showToast(`❌ Dispatch failed: ${e.message}`, 'error');
+    showToast(`Dispatch failed: ${e.message}`, 'error');
     if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
     if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '⚡ Dispatch'; }
   }
@@ -1173,8 +1180,11 @@ async function deleteEntity(endpoint, id, btnEl) {
       const res = await fetch(`${API_BASE}/${endpoint}/${id}`, {
         method: 'DELETE', headers: getAuthHeader()
       });
-      if (!res.ok) throw new Error();
-      showToast(`✅ Deleted ${endpoint.slice(0, -1)}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Failed to delete');
+      }
+      showToast(`Deleted ${endpoint.slice(0, -1)}`);
       if (btnEl) {
         const row = btnEl.closest('tr');
         if (row) {
@@ -1190,7 +1200,7 @@ async function deleteEntity(endpoint, id, btnEl) {
         setTimeout(() => loadCampResources(), 400);
       }
     } catch (e) {
-      showToast(`Failed to delete`, 'error');
+      showToast(`Delete failed: ${e.message}`, 'error');
       if (btnEl) btnEl.disabled = false;
     }
   });
@@ -1204,7 +1214,7 @@ async function updateCampOcc(id) {
       body: JSON.stringify({ occupancy: occ })
     });
     if (!res.ok) throw new Error();
-    showToast(`✅ Camp occupancy updated`);
+    showToast(`Camp occupancy updated`);
     loadAdminDash();
   } catch (e) { showToast(`Failed to update`, 'error'); }
 }
@@ -1218,7 +1228,7 @@ async function assignVol(id) {
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error();
-    showToast(`✅ Volunteer assignment updated`);
+    showToast(`Volunteer assignment updated`);
     loadAdminDash();
   } catch (e) { showToast(`Failed to update`, 'error'); }
 }
@@ -1239,7 +1249,7 @@ function initAdminForms() {
           })
         });
         if (!res.ok) throw new Error();
-        showToast('📢 Broadcasted Alert Successfully!');
+        showToast('Broadcasted Alert Successfully!');
         alertForm.reset();
         reloadAdminAlerts(); // Surgical decoupled reload
       } catch (er) { showToast('Failure to broadcast', 'error'); }
@@ -1260,7 +1270,7 @@ function initAdminForms() {
           })
         });
         if (!res.ok) throw new Error();
-        showToast('⛺ New Camp Registered!');
+        showToast('New Camp Registered!');
         campForm.reset();
         reloadAdminCamps(); // Surgical decoupled reload
       } catch (er) { showToast('Failure to create camp', 'error'); }
@@ -1452,7 +1462,7 @@ function initReportWizard() {
             reportMarker = L.circleMarker([lat, lng], { color: '#e53e3e', fillColor: '#e53e3e', fillOpacity: 0.8, radius: 8 }).addTo(reportMap);
           }
           checkStep2();
-          showToast('📍 Location captured!', 'success');
+          showToast('Location captured!', 'success');
         },
         () => {
           geoBtn.disabled = false; geoBtn.textContent = '📍 Auto-Detect My Location (GPS)';
@@ -1493,7 +1503,7 @@ function initReportWizard() {
         document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
         document.getElementById('successState').style.display = 'block';
       } catch (err) {
-        showToast(`❌ ${err.message}`, 'error');
+        showToast(err.message, 'error');
         submitBtn.disabled = false; submitBtn.textContent = '🚨 Submit Emergency Report';
       }
     });
@@ -1752,7 +1762,7 @@ async function addResource() {
   const campId = document.getElementById('resCampId').value;
   const type = document.getElementById('resType').value;
   const qty = parseInt(document.getElementById('resQty').value) || 0;
-  if (!campId || !qty) return showToast('❌ Select a camp and enter quantity.', 'error');
+  if (!campId || !qty) return showToast('Select a camp and enter quantity.', 'error');
 
   try {
     const res = await fetch(`${API_BASE}/resources/`, {
@@ -1760,7 +1770,7 @@ async function addResource() {
       body: JSON.stringify({ resource_type: type, quantity: qty, camp_id: parseInt(campId) })
     });
     if (!res.ok) throw new Error();
-    showToast('✅ Supply added!');
+    showToast('Supply added!');
     document.getElementById('resQty').value = '';
     loadCampResources();
   } catch (e) { showToast('Failed to add supply', 'error'); }
@@ -1771,7 +1781,7 @@ async function deleteResource(id) {
     try {
       const res = await fetch(`${API_BASE}/resources/${id}`, { method: 'DELETE', headers: getAuthHeader() });
       if (!res.ok) throw new Error();
-      showToast('✅ Supply removed');
+      showToast('Supply removed');
       loadCampResources();
     } catch (e) { showToast('Failed to remove', 'error'); }
   });
@@ -2030,7 +2040,7 @@ document.addEventListener('DOMContentLoaded', () => {
               })
             });
             if (!res.ok) throw new Error();
-            showToast('🚨 SOS ALERT SENT TO COMMAND CENTER!', 'success');
+            showToast('SOS ALERT SENT TO COMMAND CENTER!', 'success');
           } catch (e) {
             showToast('Failed to send SOS. Check network', 'error');
           } finally {
@@ -2094,7 +2104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(payload)
           });
           if (!res.ok) throw new Error();
-          showToast('💖 Thank you! Donation registered successfully.', 'success');
+          showToast('Thank you! Donation registered successfully.', 'success');
           closeModal();
         } catch (err) {
           showToast('Failed to register donation. Try again.', 'error');
@@ -2141,9 +2151,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pollCriticalSupplies();
     setInterval(pollCriticalSupplies, 15000);
 
-    // Start AI Forecasting Engine
-    loadAiForecasts();
-    setInterval(loadAiForecasts, 30000);
+    // Start automated weather intelligence polling
+    loadWeatherIntel();
+    setInterval(loadWeatherIntel, 30000);
   }
 
   // Hook up WebSockets for Admin and Volunteer panels
@@ -2281,7 +2291,7 @@ async function receiveDonation(id, btnEl) {
       body: JSON.stringify({ status: 'Received' })
     });
     if (!res.ok) throw new Error();
-    showToast('✅ Donation status marked as Received!');
+    showToast('Donation status marked as Received!');
     loadAdminDonations();
   } catch (e) {
     showToast('Failed to update donation status', 'error');
