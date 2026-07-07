@@ -111,6 +111,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+.two-col-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
 /* Glassmorphism Utilities */
 .glass-panel {
   background: rgba(15, 15, 18, 0.4);
@@ -479,6 +486,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
 /* Form Inputs */
 .form-group {
   display: flex;
@@ -628,8 +641,9 @@ select.form-control option {
 }
 
 /* Tables */
-.table-wrap {
+.table-wrap, .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -1185,8 +1199,29 @@ footer {
 }
 
 @media (max-width: 768px) {
-  .cmdbar { padding: 0.75rem 1rem; flex-wrap: wrap; }
-  .cmdbar-nav { width: 100%; justify-content: space-between; overflow-x: auto; padding-bottom: 0.5rem; }
+  .cmdbar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+  .cmdbar-brand {
+    font-size: 1rem;
+    text-align: center;
+  }
+  .cmdbar-nav {
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+  .cmdbar-actions {
+    margin-left: initial;
+    width: 100%;
+    justify-content: center;
+  }
   .page-container, .page-full { padding: 1rem; }
   .admin-wrap { flex-direction: column; }
   .sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 0.5rem; }
@@ -1196,6 +1231,16 @@ footer {
   .sos-fab { bottom: 1rem; left: 1rem; padding: 0.8rem 1.2rem; font-size: 1rem; }
   .weather-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .weather-forecast-grid { grid-template-columns: 1fr; }
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .map-container {
+    height: 300px;
+  }
+  #incidentMap, #publicIncidentMap {
+    height: 300px !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1717,6 +1762,9 @@ footer {
     justify-content: flex-start;
     padding-bottom: 0.25rem;
   }
+  .two-col-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Chart.js canvas — ensure proper sizing */
@@ -1728,3 +1776,12 @@ canvas {
 /* Map Radius Label */
 .radius-label { background: transparent; border: none; box-shadow: none; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.8); pointer-events: none; }
 .radius-label::before { display: none; }
+
+@media (max-width: 480px) {
+  .admin-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}

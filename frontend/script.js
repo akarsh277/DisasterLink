@@ -20,6 +20,149 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+/* ── Offline Support & Sync Queue ────────────────────────────────────────── */
+// Create and inject dynamic offline indicator banner
+function createOfflineBanner() {
+  if (document.getElementById('offlineIndicator')) return;
+  const banner = document.createElement('div');
+  banner.id = 'offlineIndicator';
+  banner.style.cssText = `
+    display: none;
+    position: fixed;
+    top: 4.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--warning);
+    color: #000;
+    font-weight: 700;
+    padding: 0.5rem 1.5rem;
+    border-radius: 100px;
+    box-shadow: 0 4px 15px rgba(245,158,11,0.4);
+    z-index: 99999;
+    font-size: 0.85rem;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-family: var(--font-heading);
+    animation: offlinePulse 2s infinite;
+  `;
+  banner.innerHTML = '⚠️ Working Offline (Updates will sync automatically when online)';
+  
+  // Inject keyframe animation
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes offlinePulse {
+      0%, 100% { opacity: 0.95; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.75; transform: translateX(-50%) scale(0.98); }
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(banner);
+}
+
+function updateOfflineStatus() {
+  createOfflineBanner();
+  const banner = document.getElementById('offlineIndicator');
+  if (!banner) return;
+  if (navigator.onLine) {
+    banner.style.display = 'none';
+    syncOfflineQueue();
+  } else {
+    banner.style.display = 'block';
+  }
+}
+
+window.addEventListener('online', updateOfflineStatus);
+window.addEventListener('offline', updateOfflineStatus);
+
+// Queue an offline request
+function queueOfflineRequest(url, method, payload, typeLabel) {
+  const queue = JSON.parse(localStorage.getItem('dl_offline_queue') || '[]');
+  queue.push({
+    id: Date.now(),
+    url,
+    method,
+    payload,
+    typeLabel,
+    timestamp: new Date().toISOString()
+  });
+  localStorage.setItem('dl_offline_queue', JSON.stringify(queue));
+  
+  // Update offline banner text if needed to show count of pending
+  const banner = document.getElementById('offlineIndicator');
+  if (banner) {
+    banner.style.display = 'block';
+    banner.innerHTML = `⚠️ Working Offline (${queue.length} update${queue.length !== 1 ? 's' : ''} queued - will sync automatically)`;
+  }
+}
+
+// Sync the offline queue
+let isSyncing = false;
+async function syncOfflineQueue() {
+  if (isSyncing || !navigator.onLine) return;
+  const queue = JSON.parse(localStorage.getItem('dl_offline_queue') || '[]');
+  if (queue.length === 0) return;
+  
+  isSyncing = true;
+  showToast(`Syncing ${queue.length} pending offline update${queue.length !== 1 ? 's' : ''}...`, 'info');
+  
+  const remaining = [];
+  let successCount = 0;
+  
+  for (const item of queue) {
+    try {
+      const headers = { 'Content-Type': 'application/json', ...getAuthHeader() };
+      const res = await fetch(item.url, {
+        method: item.method,
+        headers: headers,
+        body: JSON.stringify(item.payload)
+      });
+      if (res.ok) {
+        successCount++;
+      } else {
+        // If server returns a bad request (e.g. validation error), we might discard it,
+        // but if it is a 5xx error or connection drop we keep it.
+        if (res.status >= 400 && res.status < 500) {
+          console.warn(`Discarding invalid offline item: ${item.typeLabel}`, res.status);
+        } else {
+          remaining.push(item);
+        }
+      }
+    } catch (e) {
+      console.error(`Failed to sync offline item: ${item.typeLabel}`, e);
+      remaining.push(item);
+    }
+  }
+  
+  localStorage.setItem('dl_offline_queue', JSON.stringify(remaining));
+  isSyncing = false;
+  
+  if (successCount > 0) {
+    showToast(`Online! Successfully synced ${successCount} pending update${successCount !== 1 ? 's' : ''}.`, 'success');
+    // Refresh tables/stats if relevant to the current page
+    if (document.getElementById('homeStatGrid') && typeof loadHomeDashboard === 'function') loadHomeDashboard();
+    if (document.getElementById('publicKpiGrid') && typeof loadPublicDashboard === 'function') loadPublicDashboard();
+    if (document.getElementById('kpiGrid') && typeof loadAdminDash === 'function') loadAdminDash();
+    if (typeof loadMyAssignment === 'function') loadMyAssignment();
+  }
+  
+  const banner = document.getElementById('offlineIndicator');
+  if (banner) {
+    if (remaining.length > 0) {
+      banner.style.display = 'block';
+      banner.innerHTML = `⚠️ Offline updates pending (${remaining.length} queued)`;
+    } else {
+      banner.style.display = 'none';
+      banner.innerHTML = '⚠️ Working Offline (Updates will sync automatically when online)';
+    }
+  }
+}
+
+// Initial status check & banner creation
+window.addEventListener('DOMContentLoaded', () => {
+  createOfflineBanner();
+  updateOfflineStatus();
+});
+
 let wsConnection = null;
 
 /* ── Toast Notification ─────────────────────────────────────────────────── */
@@ -218,6 +361,7 @@ function initReportForm() {
     };
 
     try {
+      if (!navigator.onLine) throw new Error('offline');
       const res = await fetch(`${API_BASE}/reports/`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -227,8 +371,10 @@ function initReportForm() {
       form.reset();
       setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
     } catch (err) {
-      showToast(`Delete failed: ${err.message}`, 'error');
-      btn.disabled = false; btn.textContent = '🚨 DISPATCH EMERGENCY REPORT';
+      queueOfflineRequest(`${API_BASE}/reports/`, 'POST', payload, 'Incident Report');
+      showToast('Report saved offline. Redirecting to dashboard...', 'warning');
+      form.reset();
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
     }
   });
 }
@@ -1513,6 +1659,7 @@ function initReportWizard() {
         reporter_phone: document.getElementById('reporterPhone').value.trim() || null,
       };
       try {
+        if (!navigator.onLine) throw new Error('offline');
         const res = await fetch(`${API_BASE}/reports/`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1522,8 +1669,10 @@ function initReportWizard() {
         document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
         document.getElementById('successState').style.display = 'block';
       } catch (err) {
-        showToast(err.message, 'error');
-        submitBtn.disabled = false; submitBtn.textContent = '🚨 Submit Emergency Report';
+        queueOfflineRequest(`${API_BASE}/reports/`, 'POST', payload, 'Incident Report (Wizard)');
+        showToast('Report saved offline. Showing success state...', 'warning');
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('successState').style.display = 'block';
       }
     });
   }
@@ -2212,19 +2361,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
+          const payload = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude
+          };
           try {
+            if (!navigator.onLine) throw new Error('offline');
             const res = await fetch(`${API_BASE}/reports/sos`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude
-              })
+              body: JSON.stringify(payload)
             });
             if (!res.ok) throw new Error();
             showToast('SOS ALERT SENT TO COMMAND CENTER!', 'success');
           } catch (e) {
-            showToast('Failed to send SOS. Check network', 'error');
+            queueOfflineRequest(`${API_BASE}/reports/sos`, 'POST', payload, 'Quick SOS Alert');
+            showToast('SOS queued locally. It will dispatch automatically once online!', 'warning');
           } finally {
             btnSos.disabled = false;
             btnSos.innerHTML = '🚨';
@@ -2280,6 +2432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         try {
+          if (!navigator.onLine) throw new Error('offline');
           const res = await fetch(`${API_BASE}/donations/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2289,7 +2442,9 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast('Thank you! Donation registered successfully.', 'success');
           closeModal();
         } catch (err) {
-          showToast('Failed to register donation. Try again.', 'error');
+          queueOfflineRequest(`${API_BASE}/donations/`, 'POST', payload, 'Relief Donation');
+          showToast('Donation details queued offline. Thank you!', 'warning');
+          closeModal();
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Submit Donation';

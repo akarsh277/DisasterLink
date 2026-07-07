@@ -232,28 +232,31 @@
       const btn = document.querySelector(`.status-btn[onclick*="${status}"]`);
       if (btn) btn.disabled = true;
 
+      // Try to get live GPS first
+      let lat = null, lon = null;
       try {
-        // Try to get live GPS first
-        let lat = null, lon = null;
-        try {
-          const pos = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-          });
-          lat = pos.coords.latitude;
-          lon = pos.coords.longitude;
-        } catch (e) {
-          console.warn("Could not get GPS for status update, sending status only.");
-        }
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+        });
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+      } catch (e) {
+        console.warn("Could not get GPS for status update, sending status only.");
+      }
 
+      const payload = {
+        volunteer_id: volId,
+        status,
+        latitude: lat,
+        longitude: lon
+      };
+
+      try {
+        if (!navigator.onLine) throw new Error('offline');
         const res = await fetch(`${API_BASE}/volunteers/status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            volunteer_id: volId,
-            status,
-            latitude: lat,
-            longitude: lon
-          })
+          body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error('Failed to update status');
         document.getElementById('statusMsg').textContent = `✅ Status updated to ${status}`;
@@ -262,8 +265,15 @@
         // Reload assignment info
         loadMyAssignment();
       } catch (e) {
-        showToast(e.message, 'error');
-        if (btn) btn.disabled = false;
+        if (typeof queueOfflineRequest === 'function') {
+          queueOfflineRequest(`${API_BASE}/volunteers/status`, 'POST', payload, `Volunteer Status: ${status}`);
+          document.getElementById('statusMsg').textContent = `✅ Status updated to ${status} (saved offline)`;
+          showToast(`Status saved offline: ${status}`, 'warning');
+          updateStatusBtns(status);
+        } else {
+          showToast(e.message, 'error');
+          if (btn) btn.disabled = false;
+        }
       }
     }
   </script>

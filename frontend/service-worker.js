@@ -1,4 +1,4 @@
-const CACHE_NAME = 'disasterlink-v2';
+const CACHE_NAME = 'disasterlink-v3';
 const ASSETS_TO_CACHE = [
   './index.html',
   './admin.html',
@@ -33,15 +33,27 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET' && event.request.method !== 'POST') return;
 
   const url = event.request.url;
 
-  // Always go network-first for API requests
+  // Always go network-first for API requests, caching GET responses for offline read fallback
   if (url.includes('127.0.0.1:8000') || url.includes('disasterlink.onrender.com') || url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
+    if (event.request.method === 'GET') {
+      event.respondWith(
+        fetch(event.request)
+          .then((response) => {
+            if (response.ok) {
+              const resClone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+            }
+            return response;
+          })
+          .catch(() => caches.match(event.request))
+      );
+    } else {
+      event.respondWith(fetch(event.request));
+    }
     return;
   }
 
